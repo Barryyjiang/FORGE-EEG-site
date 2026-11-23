@@ -32,7 +32,7 @@
     "abstract": "How much EEG accuracy survives when a lab cap becomes a wearable? A matched-channel benchmark of nine tasks on eight public datasets, separating electrode count from electrode placement.",
     "keywords": "EEG, brain-computer interface, wearable, benchmark, electrode montage, MOABB",
     "isAccessibleForFree": true,
-    "datePublished": "2026-11-16"
+    "datePublished": "2026-11-23"
   }
   </script>
 </head>
@@ -70,6 +70,7 @@
       <p class="affiliation">Northwestern University, Evanston, IL, USA</p>
 
       <nav class="paper-links" aria-label="Paper artefacts">
+        <a href="explore/">Explorer</a>
         <a href="#cite">BibTeX</a>
         <a href="data/benchmark.json" download>Results data</a>
         <a href="https://github.com/Barryyjiang/FORGE-EEG">Code</a>
@@ -174,15 +175,20 @@
     <figure>
       <a href="assets/figures/fig3_placement.pdf" title="Open the vector PDF">
         <img src="assets/figures/fig3_placement.png" width="1600" height="910"
-             alt="Top row: four top-down head maps of the same eight-channel budgets over sensorimotor, frontal and temporal scalp and in the ear. Bottom: a bar chart of their ROC-AUC against the full-cap reference and chance.">
+             alt="Wu 2020 motor execution. Top row: four top-down head maps of the same eight-channel budgets over sensorimotor, frontal and temporal scalp and in the ear. Bottom: a bar chart of their ROC-AUC against the full-cap reference and chance.">
       </a>
       <figcaption>
-        <span class="label">Figure 2.</span> Same eight electrodes, same session, same
-        decoder, four placements. <strong>(a)</strong> The 115-channel cap in grey with
-        each montage's eight electrodes coloured. <strong>(b)</strong> ROC-AUC for each
-        placement, plus a max-spread subset and the mean of random subsets. The dashed
-        line is the full cap, the dotted line is chance. Moving those eight electrodes
-        from motor cortex to the ear costs more than discarding the other 107.
+        <span class="label">Figure 2.</span> <strong>Wu 2020 motor execution.</strong>
+        Same eight electrodes, same session, same decoder, four placements.
+        <strong>(a)</strong> The 115-channel cap in grey with each montage's eight
+        electrodes coloured. <strong>(b)</strong> ROC-AUC for each placement, plus a
+        max-spread subset and the mean of random subsets. The dashed line is the full
+        cap, the dotted line is chance. Moving those eight electrodes from motor cortex
+        to the ear costs more than discarding the other 107. This four-placement
+        ablation is possible only here, because Wu 2020 records a 115-channel scalp
+        cap and an in-ear array simultaneously; the other tasks do not have both a
+        dense cap and a simultaneous ear array, and their placement comparisons are
+        in Table 1 and the <a href="explore/">explorer</a>.
       </figcaption>
     </figure>
 
@@ -213,7 +219,8 @@
           percentage of that task's reference; the interval is a paired <em>t</em>
           interval over participants. Full per-montage tables, per-decoder
           comparisons and every control are in the
-          <a href="https://github.com/Barryyjiang/FORGE-EEG/blob/main/results/REPORT.md">benchmark report</a>.
+          <a href="https://github.com/Barryyjiang/FORGE-EEG/blob/main/results/REPORT.md">benchmark report</a> and
+          the <a href="explore/">explorer</a>.
         </p>
       </div>
 
@@ -269,20 +276,34 @@
             report refuses to write if one does not.</li>
           <li><strong>Confounds measured, not argued away.</strong> The two datasets
             with a known problem ship a control that quantifies it, below.</li>
-          <li><strong>The ear deficit is not a signal-quality artefact.</strong>
-            Degrading both montages together at matched SNR, down to 0&nbsp;dB and
-            under two noise models, never widens the ear-minus-scalp gap: the
-            largest shift is 0.074 in the narrowing direction, and
-            every paired interval includes zero (6 subjects). Heavy noise
-            flattens both montages, so the gap compresses rather than grows. The
-            cost of ear placement is structural, not a matter of a cleaner
-            recording.</li>
         </ul>
       </div>
 
+      <div class="prose"><h3>Decoders</h3></div>
     <div class="table-wrap">
     <table>
-      <caption><span class='label'>Table 2.</span> Confound and reproduction checks. The drift rows re-run the workload decoder on a label-free target — first half versus second half of the same recording — so a value above 0.50 means the recording itself moves over time. The reproduction rows compare this benchmark's 60-second attention accuracies with the two columns the original paper publishes; landing on the with-ASR column is the evidence that the released data is already artifact-cleaned.</caption>
+      <caption><span class='label'>Table 2.</span> One decoder per task, fixed before the montage results and never tuned per montage. The alternatives are reported so the decoder axis can be judged instead of assumed. All are classical pipelines fitted from scratch inside every fold: no pretrained weights and no per-montage search.</caption>
+      <thead>
+        <tr><th>Task</th><th>Headline decoder</th><th>What it is</th><th>Also evaluated</th><th>Metric</th></tr>
+      </thead>
+      <tbody>
+      <tr><td><strong>Motor imagery</strong></td><td>Riemannian TSLR</td><td><span class='small'>covariance → Riemannian tangent space → logistic regression</span></td><td><code>CSP + LDA</code>, <code>Log-variance + LDA</code></td><td>ROC-AUC</td></tr>
+      <tr><td><strong>Motor imagery, 4 classes</strong></td><td>Riemannian TSLR</td><td><span class='small'>covariance → Riemannian tangent space → logistic regression</span></td><td><code>CSP + LDA</code>, <code>Log-variance + LDA</code></td><td>Accuracy</td></tr>
+      <tr><td><strong>P300 speller</strong></td><td>xDAWN + Riemannian</td><td><span class='small'>xDAWN evoked-response filters → covariance → tangent space → LR</span></td><td><code>Log-variance + LDA</code></td><td>ROC-AUC</td></tr>
+      <tr><td><strong>SSVEP</strong></td><td>CCA (SSVEP)</td><td><span class='small'>canonical correlation with reference sinusoids → argmax</span></td><td><span class='small'>—</span></td><td>Accuracy</td></tr>
+      <tr><td><strong>Motor execution</strong></td><td>Riemannian TSLR</td><td><span class='small'>covariance → Riemannian tangent space → logistic regression</span></td><td><code>CSP + LDA</code>, <code>Log-variance + LDA</code></td><td>ROC-AUC</td></tr>
+      <tr><td><strong>Sleep staging</strong></td><td>Band-power + LDA</td><td><span class='small'>relative band power per channel → shrinkage LDA</span></td><td><span class='small'>—</span></td><td>Cohen’s κ</td></tr>
+      <tr><td><strong>Cognitive workload</strong></td><td>PSD + LDA</td><td><span class='small'>relative PSD features → shrinkage LDA</span></td><td><span class='small'>—</span></td><td>ROC-AUC</td></tr>
+      <tr><td><strong>Auditory attention</strong></td><td>Ridge reconstruction</td><td><span class='small'>ridge regression to the speech envelope → correlation match</span></td><td><span class='small'>—</span></td><td>Accuracy</td></tr>
+      <tr><td><strong>Emotion recognition</strong></td><td>PSD + LDA</td><td><span class='small'>relative PSD features → shrinkage LDA</span></td><td><span class='small'>—</span></td><td>Balanced accuracy</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+      <div class="prose"><h3>Checks</h3></div>
+    <div class="table-wrap">
+    <table>
+      <caption><span class='label'>Table 3.</span> Confound and reproduction checks. The drift rows re-run the workload decoder on a label-free target — first half versus second half of the same recording — so a value above 0.50 means the recording itself moves over time. The reproduction rows compare this benchmark's 60-second attention accuracies with the two columns the original paper publishes; landing on the with-ASR column is the evidence that the released data is already artifact-cleaned.</caption>
       <thead>
         <tr><th>Check</th><th>Task</th><th class="num">Measured</th><th class="num">Comparator</th><th>Reading</th></tr>
       </thead>
@@ -294,10 +315,6 @@
       <tr><td>Reproduction<br><span class='small'>against the paper</span></td><td><strong>Ear-SAAD, scalp 29 ch</strong></td><td class="num">83.70%</td><td class="num">83.44% with ASR / 86.11% without</td><td>matches the full pipeline</td></tr>
       <tr><td>Reproduction<br><span class='small'>against the paper</span></td><td><strong>Ear-SAAD, around-ear 19 ch</strong></td><td class="num">68.89%</td><td class="num">67.22% with ASR / 64.89% without</td><td>matches the full pipeline</td></tr>
       <tr><td>Reproduction<br><span class='small'>against the paper</span></td><td><strong>Ear-SAAD, in-ear 12 ch</strong></td><td class="num">62.59%</td><td class="num">61.11% with ASR / 58.78% without</td><td>matches the full pipeline</td></tr>
-      <tr><td>Noise<br><span class='small'>matched SNR, k=8</span></td><td><strong>Wu 2020, donor noise</strong></td><td class="num">-0.283</td><td class="num">clean gap, Δ -0.005 [-0.023, +0.013] at 15 dB</td><td>never widens</td></tr>
-      <tr><td>Noise<br><span class='small'>matched SNR, k=8</span></td><td><strong>Wu 2020, white noise</strong></td><td class="num">-0.290</td><td class="num">clean gap, Δ -0.013 [-0.047, +0.022] at 15 dB</td><td>never widens</td></tr>
-      <tr><td>Noise<br><span class='small'>matched SNR, k=8</span></td><td><strong>Wu 2020, donor noise</strong></td><td class="num">-0.252</td><td class="num">clean gap, Δ +0.026 [-0.034, +0.085] at 0 dB</td><td>never widens</td></tr>
-      <tr><td>Noise<br><span class='small'>matched SNR, k=8</span></td><td><strong>Wu 2020, white noise</strong></td><td class="num">-0.204</td><td class="num">clean gap, Δ +0.074 [-0.016, +0.164] at 0 dB</td><td>never widens</td></tr>
       </tbody>
     </table>
     </div>
@@ -374,10 +391,11 @@
     <div class="container footer-inner">
       <p>
         <strong>The Electrode Budget</strong> · page generated from
-        <code>results/benchmark/</code> on 2026-11-16.
+        <code>results/benchmark/</code> on 2026-11-23.
       </p>
       <p>
         <a href="#top">Top</a> ·
+        <a href="explore/">Explorer</a> ·
         <a href="data/benchmark.json">Data</a> ·
         <a href="https://github.com/Barryyjiang/FORGE-EEG">Code</a>
       </p>
